@@ -5,20 +5,19 @@ import { FormEvent, useState, useEffect} from "react";
 import {T_card_list } from "../interfaces";
 import Scroll from "../components/scroll";
 import ErrorBoundry from "../components/erroBoundry";
+import { useSelector, useDispatch } from 'react-redux';
+import { search } from "../redux/features/searchRobotSlice";
+import { RootState } from "../redux/store";
+import { useGetUserQuery } from "../redux/services/fetchRobots";
 
 const App=()=>{
-    const [robots,setRobots]=useState<T_card_list[]>([]);
-    const [searchField,setSearchField]=useState<string>('');
-    const onSearchChange=(e:FormEvent<HTMLInputElement>)=> setSearchField(e.currentTarget.value);
-
-    useEffect(()=>{
-        fetch('https://jsonplaceholder.typicode.com/users')
-            .then((res)=>res.json())
-            .then((users)=>setRobots(users));
-    },[])
-
-    const filteredRobots=robots.filter(robot=>robot.name.toLowerCase().includes(searchField.toLowerCase()));
-    return robots.length?(
+    const searchField=useSelector((state:RootState)=>state.searchField.searchField)
+    // const robot=useSelector((state:RootState)=>state.fetchRobot);
+    const dispatch=useDispatch()
+    const onSearchChange=(e:FormEvent<HTMLInputElement>)=> dispatch(search(e.currentTarget.value));
+    const { data, isSuccess }=useGetUserQuery('');
+    const filteredRobots=data?.filter((robot: { name: string; })=>robot.name.toLowerCase().includes(searchField.toLowerCase()));
+    return isSuccess?(
         <>
             <h1 className="text-center robot-text mb-5 mt-7">RoboFriends</h1>
             <SearchBox searchChange={onSearchChange} />
@@ -28,7 +27,7 @@ const App=()=>{
                 </ErrorBoundry>
             </Scroll>
         </>
-    ):<h1 className="mt-7">Loading...</h1>}
+    ):<h1 className="mt-7 text-center robot-text">Loading...</h1>}
 export default App;
 
 
